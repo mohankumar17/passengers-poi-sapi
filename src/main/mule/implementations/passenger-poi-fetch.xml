@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="passenger-poi-fetchFlow" doc:id="a01ec7f3-7e21-4a9f-918f-853a1dc570de" >
+		<flow-ref doc:name="get-auth-token-flow" doc:id="a9afaf3a-53c2-444f-8dd0-c030e5111607" name="get-auth-token-flow"/>
+		<http:request method="GET" doc:name="IBM S3 Fetch" doc:id="712ad5d3-3af7-4910-8006-fae6fd09549c" config-ref="IBM_S3_API_Request_configuration" path="/{bucketName}/{fileName}">
+			<http:headers ><![CDATA[#[{
+	"Authorization": "Bearer " ++ (vars.accessTokenVar as String),
+	"ibm-service-instance-id": Mule::p('secure::ibm.S3.instanceId')
+}]]]></http:headers>
+			<http:uri-params ><![CDATA[#[{
+	bucketName: vars.bucketName,
+	fileName: vars.fileName
+}]]]></http:uri-params>
+		</http:request>
+	</flow>
+</mule>

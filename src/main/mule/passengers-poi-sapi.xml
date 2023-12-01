@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+    <flow name="passengers-poi-sapi-main">
+        <http:listener config-ref="passengers-poi-sapi-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <ee:transform doc:name="correlationId and transactionId" doc:id="69efb704-8919-4c35-b9ae-9b08417ea7b8" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="correlationId" ><![CDATA[%dw 2.0
+output application/java
+---
+attributes.headers."correlation-id" default uuid()]]></ee:set-variable>
+				<ee:set-variable variableName="transactionId" ><![CDATA[%dw 2.0
+output application/java
+---
+attributes.headers."transaction-id" default uuid()]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+        <apikit:router config-ref="passengers-poi-sapi-config" />
+		<error-handler ref="global-error-handler" />
+    </flow>
+    <flow name="passengers-poi-sapi-console">
+        <http:listener config-ref="passengers-poi-sapi-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="passengers-poi-sapi-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="get:\fetch\(bucketName)\(fileName):passengers-poi-sapi-config">
+        <ee:transform doc:name="fileName and bucketName">
+            <ee:variables>
+                <ee:set-variable variableName="bucketName">attributes.uriParams.'bucketName'</ee:set-variable>
+                <ee:set-variable variableName="fileName">attributes.uriParams.'fileName'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+		<flow-ref doc:name="passenger-poi-fetchFlow" doc:id="c08a39ff-7eda-4e22-85e2-78e98da18a06" name="passenger-poi-fetchFlow"/>
+    </flow>
+    <flow name="post:\upload:application\json:passengers-poi-sapi-config">
+        <flow-ref doc:name="passenger-poi-uploadFlow" doc:id="0b38426c-ba32-40c9-a105-23f6495d57dc" name="passenger-poi-uploadFlow"/>
+    </flow>
+</mule>

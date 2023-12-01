@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	
+	<sub-flow name="get-auth-token-flow" doc:id="18112680-c7a4-4ebd-8e18-a83e3d5480bc" >
+		<os:retrieve doc:name="accessToken" doc:id="8502c5ef-98ab-41e6-a4e1-f7f798cc47c1" objectStore="Object_store" key="accessToken" target="accessTokenVar">
+			<os:default-value ><![CDATA[#[""]]]></os:default-value>
+		</os:retrieve>
+		<choice doc:name="Choice" doc:id="bc0c1202-fd49-4040-951c-24ec03389c18" >
+			<when expression="#[isEmpty(vars.accessTokenVar as String)]">
+				<http:request method="POST" doc:name="IBM S3 OAuth" doc:id="92313600-f4ce-4a88-9aec-b406d8bcc072" url="${secure::ibm.OAuth.url}" outputMimeType="application/json" target="authResponse">
+					<reconnect frequency="5000" count="5"/>
+					<http:body ><![CDATA[#[%dw 2.0
+output application/x-www-form-urlencoded
+---
+{
+	grant_type: "urn:ibm:params:oauth:grant-type:apikey",
+	apikey: Mule::p('secure::ibm.OAuth.apiKey')
+}]]]></http:body>
+				</http:request>
+				<set-variable value="#[vars.authResponse.access_token as String]" doc:name="accessTokenVar" doc:id="6d4e4ff5-5baa-4e21-b056-7824bea0efa5" variableName="accessTokenVar" />
+				<os:store doc:name="accessToken" doc:id="e3af75e0-9611-4ed3-94a4-b903d0cfdace" key="accessToken" objectStore="Object_store">
+					<os:value ><![CDATA[#[vars.accessTokenVar]]]></os:value>
+				</os:store>
+			</when>
+		</choice>
+	</sub-flow>
+</mule>

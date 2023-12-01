@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+	
+	<http:listener-config name="passengers-poi-sapi-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="${http.port}" />
+    </http:listener-config>
+    <apikit:config name="passengers-poi-sapi-config" api="resource::b98b97ab-1755-496f-aa80-cf17a9e56db8:passengers-poi-upload-sapi:1.0.0:raml:zip:passengers-poi-sapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+	<configuration-properties doc:name="Configuration properties" doc:id="9b68b461-fe3e-4361-9a9c-34b6f9b68619" file="properties\default.yaml" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="c473814f-668f-4cc8-a0a0-eae17a52b0af" file="properties/${mule.env}.yaml" key="${enc.key}" />
+	<http:request-config name="IBM_S3_API_Request_configuration" doc:name="HTTP Request configuration" doc:id="d28f5909-7fba-445c-974e-276afd9764c2" basePath="${secure::ibm.S3.basePath}" >
+		<http:request-connection protocol="HTTPS" host="${secure::ibm.S3.host}" >
+			<reconnection >
+				<reconnect frequency="5000" count="3"/>
+			</reconnection>
+		</http:request-connection>
+	</http:request-config>
+	<os:object-store name="Object_store" doc:name="Object store" doc:id="c96b543b-a444-4059-b011-3845ec55f340" entryTtl="${secure::ibm.OAuth.expiryTime}" />
+	<api-gateway:autodiscovery apiId="19143791" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="48a77626-3f86-432b-8bb1-a3ada9876267" flowRef="passengers-poi-sapi-main" />
+</mule>

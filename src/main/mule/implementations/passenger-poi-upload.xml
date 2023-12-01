@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="passenger-poi-uploadFlow" doc:id="bf144a37-55a2-44c5-a3d1-8a498e88281b" >
+		<ee:transform doc:name="Transform Message" doc:id="7f3a3225-1436-411c-bfec-9d77c22324ea" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="decodedDocument" ><![CDATA[%dw 2.0
+import fromBase64 from dw::core::Binaries
+output application/octet-stream
+---
+fromBase64(payload.document as String) as Binary
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="get-auth-token-flow" doc:id="f9b656bc-499e-4eab-8f90-59c627623115" name="get-auth-token-flow"/>
+		<http:request method="PUT" doc:name="IBM S3 Upload" doc:id="7f6a39c2-d8ff-402f-a6b7-6930b55ff583" config-ref="IBM_S3_API_Request_configuration" path="/{bucketName}/{fileName}" target="ibmS3Response">
+			<http:body ><![CDATA[#[vars.decodedDocument]]]></http:body>
+			<http:headers ><![CDATA[#[{
+	"Authorization": "Bearer " ++ (vars.accessTokenVar as String),
+	"ibm-service-instance-id": Mule::p('secure::ibm.S3.instanceId')
+}]]]></http:headers>
+			<http:uri-params ><![CDATA[#[{
+	bucketName: payload.bucketName,
+	fileName: payload.fileName
+}]]]></http:uri-params>
+		</http:request>
+		<ee:transform doc:name="Success Response" doc:id="ce516143-a38e-4d21-b651-58dc83491973" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import substringBefore from dw::core::Strings
+output application/json
+---
+{
+  message: "Document uploaded successfully",
+  bucketName: payload.bucketName,
+  reservationId: (payload.fileName substringBefore "_") as String,
+  dateTime: now() as String{format: "yyyy-MM-dd'T'hh:mm:ss'Z'"}
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="httpStatus" ><![CDATA[201]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+	</flow>
+</mule>

@@ -1,0 +1,10 @@
+ibm:
+  S3:
+    host: "s3.us-south.cloud-object-storage.appdomain.cloud"
+    basePath: "/"
+    instanceId: "crn:v1:bluemix:public:cloud-object-storage:global:a/ec50ffcfb8f0406d95bf697ffb363753:a242acbc-9497-48b0-b2dd-c2aa46b61425::"
+  OAuth:
+    url: "https://iam.cloud.ibm.com/identity/token"
+    expiryTime: "3600"
+    apiKey: "![Cc2/at0gydB4+BEBhov7b9nogppPE1jjWoizKTHXq6HVqXGub1xYBWkPawlfk/38]"
+  
