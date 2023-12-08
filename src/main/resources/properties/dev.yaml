@@ -6,5 +6,5 @@ ibm:
   OAuth:
     url: "https://iam.cloud.ibm.com/identity/token"
     expiryTime: "3600"
-    apiKey: "![Cc2/at0gydB4+BEBhov7b9nogppPE1jjWoizKTHXq6HVqXGub1xYBWkPawlfk/38]"
+    apiKey: "![SAUAlYSpbzKUjR6kEcwFz268tS6CgL0wUtDzljteedWCpG84GzMkQU1lj3L5kZcr]"
   
