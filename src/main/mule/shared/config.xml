@@ -14,7 +14,7 @@ http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/m
 	<http:listener-config name="passengers-poi-sapi-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="${http.port}" />
     </http:listener-config>
-    <apikit:config name="passengers-poi-sapi-config" api="resource::b98b97ab-1755-496f-aa80-cf17a9e56db8:passengers-poi-upload-sapi:1.0.0:raml:zip:passengers-poi-sapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <apikit:config name="passengers-poi-sapi-config" api="resource::c01f82a6-7df0-4b05-860e-12711fd918eb:passengers-poi-sapi:1.0.0:raml:zip:passengers-poi-sapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
 	<configuration-properties doc:name="Configuration properties" doc:id="9b68b461-fe3e-4361-9a9c-34b6f9b68619" file="properties\default.yaml" />
 	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="c473814f-668f-4cc8-a0a0-eae17a52b0af" file="properties/${mule.env}.yaml" key="${enc.key}" />
 	<http:request-config name="IBM_S3_API_Request_configuration" doc:name="HTTP Request configuration" doc:id="d28f5909-7fba-445c-974e-276afd9764c2" basePath="${secure::ibm.S3.basePath}" >
@@ -25,5 +25,5 @@ http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/m
 		</http:request-connection>
 	</http:request-config>
 	<os:object-store name="Object_store" doc:name="Object store" doc:id="c96b543b-a444-4059-b011-3845ec55f340" entryTtl="${secure::ibm.OAuth.expiryTime}" />
-	<api-gateway:autodiscovery apiId="19143791" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="48a77626-3f86-432b-8bb1-a3ada9876267" flowRef="passengers-poi-sapi-main" />
+	<api-gateway:autodiscovery apiId="19168310" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="905c22bb-ca00-4959-8c7d-20a6955c4b14" flowRef="passengers-poi-sapi-main" />
 </mule>
